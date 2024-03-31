@@ -1,0 +1,38 @@
+### Create a new book
+POST http://localhost:8080/book/
+Content-Type: application/json
+
+{
+  "name": "O projeto Fenix",
+  "author": "Gene Kim, Kevin Behr e George Spafford",
+  "publication": "Alta Books"
+}
+
+### Create another book
+POST http://localhost:8080/book/
+Content-Type: application/json
+
+{
+  "name": "O projeto unicórnio",
+  "author": "Gene Kim",
+  "publication": "Alta Books"
+}
+
+### Edit the book
+PUT http://localhost:8080/book/2
+Content-Type: application/json
+
+{
+  "name": "O projeto Unicórnio"
+}
+
+### Delete a book
+DELETE http://localhost:8080/book/1
+Accept: pkglication/json
+
+### Get all books
+GET http://localhost:8080/book/
+Accept: pkglication/json
+
+### Get one book
+GET http://localhost:8080/book/2
