@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "name": "O projeto Fenix",
-  "author": "Gene Kim, Kevin Behr e George Spafford",
+//  "author": "Gene Kim, Kevin Behr e George Spafford",
   "publication": "Alta Books"
 }
 
@@ -19,7 +19,7 @@ Content-Type: application/json
 }
 
 ### Edit the book
-PUT http://localhost:8080/book/2
+PUT http://localhost:8080/book/2asda
 Content-Type: application/json
 
 {

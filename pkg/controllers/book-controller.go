@@ -3,85 +3,71 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/phaalonso/book-store/pkg/models"
 	"github.com/phaalonso/book-store/pkg/utils"
 	"net/http"
-	"strconv"
 )
-
-var NewBook models.Book
 
 func GetBook(w http.ResponseWriter, _ *http.Request) {
 	newBooks := models.GetAllBooks()
 
 	res, _ := json.Marshal(newBooks)
 
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+	utils.SendJson(w, http.StatusOK, res)
 }
 
 func GetBookById(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	bookId := vars["bookId"]
-
-	ID, err := strconv.ParseInt(bookId, 0, 0)
+	ID, err := utils.ExtractParamId(r, "bookId")
 
 	if err != nil {
-		fmt.Println("error while parsing")
+		ErrorResponse(http.StatusPreconditionFailed, "Incorrect param", w)
+		return
 	}
 
 	bookDetails, _ := models.GetBookById(ID)
 
 	res, _ := json.Marshal(bookDetails)
 
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+	utils.SendJson(w, http.StatusOK, res)
 }
 
 func CreateBook(w http.ResponseWriter, r *http.Request) {
-	createbook := &models.Book{}
-	utils.ParseBody(r, createbook)
-	b := createbook.CreateBook()
+	createBook := &models.Book{}
+	utils.ParseBody(r, createBook)
+
+	b := createBook.CreateBook()
+
+	fmt.Println(b)
 
 	res, _ := json.Marshal(b)
 
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(res)
+	utils.SendJson(w, http.StatusCreated, res)
 }
 
 func DeleteBookById(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
-	ID, err := strconv.ParseInt(bookId, 0, 0)
+	ID, err := utils.ExtractParamId(r, "bookId")
 
 	if err != nil {
-		fmt.Println("error while parsing")
+		ErrorResponse(http.StatusPreconditionFailed, "Incorrect param", w)
+		return
 	}
 
 	deletedBook := models.DeleteBook(ID)
 
 	res, _ := json.Marshal(deletedBook)
 
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusNoContent)
-	w.Write(res)
+	utils.SendJson(w, http.StatusNoContent, res)
 }
 
 func UpdateBookById(w http.ResponseWriter, r *http.Request) {
 	var updateBook = &models.Book{}
 	utils.ParseBody(r, updateBook)
 
-	vars := mux.Vars(r)
-	bookId := vars["bookId"]
-	ID, err := strconv.ParseInt(bookId, 0, 0)
+	ID, err := utils.ExtractParamId(r, "bookId")
 
 	if err != nil {
-		fmt.Println("error while parsing")
+		ErrorResponse(http.StatusPreconditionFailed, "Incorrect param", w)
+		return
 	}
 
 	book, db := models.GetBookById(ID)
@@ -103,7 +89,23 @@ func UpdateBookById(w http.ResponseWriter, r *http.Request) {
 
 	res, _ := json.Marshal(book)
 
-	w.Header().Set("Content-Type", "pkglication/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+	utils.SendJson(w, http.StatusOK, res)
+}
+
+func ErrorResponse(statusCode int, error string, w http.ResponseWriter) {
+	//Create a new map and fill it
+	fields := make(map[string]interface{})
+	fields["status"] = "error"
+	fields["message"] = error
+	message, err := json.Marshal(fields)
+
+	if err != nil {
+		//An error occurred processing the json
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("An error occured internally"))
+
+		return
+	}
+
+	utils.SendJson(w, statusCode, message)
 }
