@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/phaalonso/book-store/pkg/models"
 	"github.com/phaalonso/book-store/pkg/utils"
 	"net/http"
@@ -33,11 +32,14 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 
 func CreateBook(w http.ResponseWriter, r *http.Request) {
 	createBook := &models.Book{}
-	utils.ParseBody(r, createBook)
+	err := utils.ParseBody(r, createBook)
+
+	if err != nil {
+		ErrorResponse(http.StatusPreconditionFailed, "Invalid json", w)
+		return
+	}
 
 	b := createBook.CreateBook()
-
-	fmt.Println(b)
 
 	res, _ := json.Marshal(b)
 
@@ -61,7 +63,12 @@ func DeleteBookById(w http.ResponseWriter, r *http.Request) {
 
 func UpdateBookById(w http.ResponseWriter, r *http.Request) {
 	var updateBook = &models.Book{}
-	utils.ParseBody(r, updateBook)
+	err := utils.ParseBody(r, updateBook)
+
+	if err != nil {
+		ErrorResponse(http.StatusPreconditionFailed, "Invalid json", w)
+		return
+	}
 
 	ID, err := utils.ExtractParamId(r, "bookId")
 
@@ -72,7 +79,6 @@ func UpdateBookById(w http.ResponseWriter, r *http.Request) {
 
 	book, db := models.GetBookById(ID)
 
-	// TODO existe alguma maneira de mesclar objetos?
 	if updateBook.Name != "" {
 		book.Name = updateBook.Name
 	}
@@ -100,10 +106,7 @@ func ErrorResponse(statusCode int, error string, w http.ResponseWriter) {
 	message, err := json.Marshal(fields)
 
 	if err != nil {
-		//An error occurred processing the json
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("An error occured internally"))
-
+		utils.SendMessage(w, http.StatusInternalServerError, []byte("An error occurred internally"))
 		return
 	}
 

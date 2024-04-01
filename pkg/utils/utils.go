@@ -8,20 +8,29 @@ import (
 	"strconv"
 )
 
-func ParseBody(r *http.Request, x interface{}) {
+func ParseBody(r *http.Request, x interface{}) error {
 	var body, err = io.ReadAll(r.Body)
 
 	if err == nil {
 		err = json.Unmarshal(body, x)
 
-		if err != nil {
-			return
-		}
+		return err
 	}
+
+	return err
 }
 
 func SendJson(w http.ResponseWriter, statusCode int, b []byte) {
 	w.Header().Set("Content-Type", "pkglication/json")
+	w.WriteHeader(statusCode)
+	_, err := w.Write(b)
+
+	if err != nil {
+		return
+	}
+}
+
+func SendMessage(w http.ResponseWriter, statusCode int, b []byte) {
 	w.WriteHeader(statusCode)
 	_, err := w.Write(b)
 
